@@ -1,6 +1,6 @@
 /**
  * RTBF Auvio AdBlocker Content Script
- * Targets ads in the Red Bee Media player used by Auvio.
+ * Optimized for Red Bee Media Player and common ad patterns.
  */
 
 (function() {
@@ -36,50 +36,54 @@
     }
 
     function handleAds() {
-        const banners = document.querySelectorAll('.imu, .leaderboard, .pub-container, .ads-container');
-        banners.forEach(banner => {
-            banner.style.setProperty('display', 'none', 'important');
+        // Hide standard banner containers
+        const bannerSelectors = [
+            '.imu', '.leaderboard', '.pub-container', '.ads-container',
+            '[id*="google_ads"]', '[class*="ad-container"]', '.ad-unit'
+        ];
+        bannerSelectors.forEach(sel => {
+            document.querySelectorAll(sel).forEach(el => {
+                el.style.setProperty('display', 'none', 'important');
+            });
         });
 
-        const player = document.querySelector('video');
-        const adPlayingClasses = [
-            '.vjs-ad-playing',
-            '.ad-active',
-            '.ima-ad-container',
-            '.video-ad-container',
-            '.redbee-player-ad-playing'
-        ];
+        // Auvio specific: detect ad state in video elements
+        const videos = document.querySelectorAll('video');
+        let anyAdDetected = false;
 
-        let isAdPlaying = false;
-        for (const selector of adPlayingClasses) {
-            if (document.querySelector(selector)) {
-                isAdPlaying = true;
-                break;
+        videos.forEach(v => {
+            // Check for ad indicators in parents
+            let parent = v.parentElement;
+            let isThisVideoAnAd = false;
+            while (parent && parent !== document.body) {
+                if (parent.classList.contains('vjs-ad-playing') ||
+                    parent.classList.contains('ima-ad-container') ||
+                    parent.classList.contains('video-ad-container') ||
+                    parent.getAttribute('data-ad-playing') === 'true') {
+                    isThisVideoAnAd = true;
+                    break;
+                }
+                parent = parent.parentElement;
             }
-        }
 
-        const adVideos = document.querySelectorAll('.vjs-ad-playing video, .ima-ad-container video, .video-ad-container video');
-        const isAdActive = (isAdPlaying || adVideos.length > 0);
+            // Check src for common ad strings if not already detected
+            if (!isThisVideoAnAd && v.src) {
+                if (v.src.includes('googlevideo.com/videoplayback') && v.src.includes('oad')) {
+                   isThisVideoAnAd = true;
+                }
+            }
 
-        updateStatus(isAdActive);
-
-        if (isAdActive) {
-            adVideos.forEach(v => {
+            if (isThisVideoAnAd) {
+                anyAdDetected = true;
                 if (!v.muted) v.muted = true;
                 v.playbackRate = 16;
                 if (isFinite(v.duration) && v.duration > 0) {
                     v.currentTime = v.duration - 0.1;
                 }
-            });
-
-            if (isAdPlaying && player) {
-                if (!player.muted) player.muted = true;
-                player.playbackRate = 16;
-                if (isFinite(player.duration) && player.duration > 0) {
-                    player.currentTime = player.duration - 0.1;
-                }
             }
-        }
+        });
+
+        updateStatus(anyAdDetected);
     }
 
     function init() {
@@ -92,7 +96,7 @@
 
         const observer = new MutationObserver(handleAds);
         const targetNode = document.body;
-        observer.observe(targetNode, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+        observer.observe(targetNode, { childList: true, subtree: true, attributes: true });
 
         handleAds();
         setInterval(handleAds, 1000);

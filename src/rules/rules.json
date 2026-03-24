@@ -28,5 +28,29 @@
     "priority": 1,
     "action": { "type": "block" },
     "condition": { "urlFilter": "rtbf.be/api/v1/ad-", "resourceTypes": ["xmlhttprequest"] }
+  },
+  {
+    "id": 6,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": { "urlFilter": "rmb.be", "resourceTypes": ["script", "xmlhttprequest"] }
+  },
+  {
+    "id": 7,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": { "urlFilter": "smartadserver.com", "resourceTypes": ["script", "xmlhttprequest"] }
+  },
+  {
+    "id": 8,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": { "urlFilter": "googletagservices.com", "resourceTypes": ["script", "xmlhttprequest"] }
+  },
+  {
+    "id": 9,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": { "urlFilter": "adbreaks", "resourceTypes": ["xmlhttprequest"], "domainFilter": ["rtbf.be"] }
   }
 ]
