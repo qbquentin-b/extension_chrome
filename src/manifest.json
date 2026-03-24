@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Custom AdBlocker",
+  "version": "1.0",
+  "description": "AdBlocker for YouTube, Twitch, and RTBF Auvio",
+  "permissions": [
+    "declarativeNetRequest"
+  ],
+  "host_permissions": [
+    "*://*.youtube.com/*",
+    "*://*.twitch.tv/*",
+    "*://*.rtbf.be/*"
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_1",
+        "enabled": true,
+        "path": "rules/rules.json"
+      }
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["scripts/youtube.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://*.twitch.tv/*"],
+      "js": ["scripts/twitch.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://*.rtbf.be/*"],
+      "js": ["scripts/auvio.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
