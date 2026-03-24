@@ -4,6 +4,37 @@
  */
 
 (function() {
+    let statusDot = null;
+
+    function createStatusDot() {
+        if (statusDot) return;
+        statusDot = document.createElement('div');
+        statusDot.id = 'adblock-status-dot';
+        statusDot.style.position = 'fixed';
+        statusDot.style.top = '10px';
+        statusDot.style.right = '10px';
+        statusDot.style.width = '12px';
+        statusDot.style.height = '12px';
+        statusDot.style.borderRadius = '50%';
+        statusDot.style.zIndex = '10000';
+        statusDot.style.border = '2px solid white';
+        statusDot.style.boxShadow = '0 0 5px rgba(0,0,0,0.5)';
+        statusDot.style.backgroundColor = '#28a745'; // Green
+        statusDot.title = 'AdBlocker Actif';
+        document.body.appendChild(statusDot);
+    }
+
+    function updateStatus(isAd) {
+        if (!statusDot) createStatusDot();
+        if (isAd) {
+            statusDot.style.backgroundColor = '#dc3545'; // Red
+            statusDot.title = 'Publicité détectée et bloquée';
+        } else {
+            statusDot.style.backgroundColor = '#28a745'; // Green
+            statusDot.title = 'AdBlocker Actif';
+        }
+    }
+
     function handleAds() {
         // Hide display ads wrappers
         const displayAdWrappers = document.querySelectorAll('.stream-display-ad__wrapper, .ad-banner');
@@ -18,7 +49,10 @@
 
         const adIndicator = document.querySelector('[data-a-target="player-ad-overlay"]');
 
-        if ((commercialOverlay || adIndicator) && player) {
+        const isAdActive = !!(commercialOverlay || adIndicator);
+        updateStatus(isAdActive);
+
+        if (isAdActive && player) {
             if (!player.muted) player.muted = true;
             showBlockedOverlay();
         } else {
@@ -72,6 +106,8 @@
             setTimeout(init, 100);
             return;
         }
+
+        createStatusDot();
 
         // Use MutationObserver for Twitch's dynamic content
         const observer = new MutationObserver(handleAds);

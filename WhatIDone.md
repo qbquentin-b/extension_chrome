@@ -28,37 +28,37 @@
   - `rules/rules.json` : Règles DNR pour le blocage réseau préemptif.
   - `scripts/` : Un script par plateforme pour maximiser la clarté et la maintenance.
 - **Fast-Forward :** Préféré au blocage pur sur YouTube/Auvio pour éviter de casser le flux vidéo et contourner les détections d'adblockers agressifs.
+- **Indicateur de Statut :** Ajout d'un point de couleur en haut à droite (Vert : actif, Rouge : publicité en cours de blocage) pour donner un feedback visuel à l'utilisateur.
 
 ## 3. Actions pas à pas
 - [x] Initialisation de `WhatIDone.md`.
 - [x] Configuration du `manifest.json` (MV3).
 - [x] Implémentation des règles DNR.
-- [x] Développement de `youtube.js` avec MutationObserver.
-- [x] Développement de `twitch.js` avec overlay personnalisé.
-- [x] Développement de `auvio.js` pour cibler le Red Bee Player.
+- [x] Développement de `youtube.js` avec MutationObserver et indicateur de statut.
+- [x] Développement de `twitch.js` avec overlay personnalisé et indicateur de statut.
+- [x] Développement de `auvio.js` pour cibler le Red Bee Player avec indicateur de statut.
 - [x] Finalisation de la documentation et du protocole de test.
 
 ## 4. Protocoles de test manuel
 ### YouTube
 1. Naviguer sur `youtube.com`.
-2. Lancer une vidéo connue pour avoir des publicités.
-3. Vérifier :
-   - Si une pub se lance, le son se coupe et l'image défile très vite.
-   - Le bouton "Skip ad" est cliqué automatiquement dès que possible.
-   - Les bannières d'overlay disparaissent.
+2. Vérifier la présence d'un point **vert** en haut à droite.
+3. Lancer une vidéo.
+4. Si une pub se lance :
+   - Le point devient **rouge**.
+   - Le son se coupe et l'image défile très vite.
+   - Le bouton "Skip ad" est cliqué automatiquement.
 
 ### Twitch
 1. Aller sur un stream `twitch.tv`.
-2. Attendre une coupure publicitaire.
-3. Vérifier :
+2. Vérifier le point **vert**.
+3. Lors d'une pub :
+   - Le point devient **rouge**.
    - L'overlay noir "Publicité bloquée" apparaît.
-   - Le son est coupé.
-   - Le flux normal reprend après la pub sans intervention manuelle.
 
 ### RTBF Auvio
 1. Se connecter sur `auvio.rtbf.be`.
-2. Lancer un replay ou un live.
-3. Vérifier :
-   - Les bannières latérales sont masquées.
-   - Les pubs pré-roll sont accélérées ou passées.
-   - Pas de plantage du lecteur vidéo Red Bee Media.
+2. Vérifier le point **vert**.
+3. Lors d'une pub :
+   - Le point devient **rouge**.
+   - La pub est accélérée ou passée.

@@ -4,23 +4,52 @@
  */
 
 (function() {
+    let statusDot = null;
+
+    function createStatusDot() {
+        if (statusDot) return;
+        statusDot = document.createElement('div');
+        statusDot.id = 'adblock-status-dot';
+        statusDot.style.position = 'fixed';
+        statusDot.style.top = '10px';
+        statusDot.style.right = '10px';
+        statusDot.style.width = '12px';
+        statusDot.style.height = '12px';
+        statusDot.style.borderRadius = '50%';
+        statusDot.style.zIndex = '10000';
+        statusDot.style.border = '2px solid white';
+        statusDot.style.boxShadow = '0 0 5px rgba(0,0,0,0.5)';
+        statusDot.style.backgroundColor = '#28a745'; // Green by default
+        statusDot.title = 'AdBlocker Actif';
+        document.body.appendChild(statusDot);
+    }
+
+    function updateStatus(isAd) {
+        if (!statusDot) createStatusDot();
+        if (isAd) {
+            statusDot.style.backgroundColor = '#dc3545'; // Red
+            statusDot.title = 'Publicité détectée et bloquée';
+        } else {
+            statusDot.style.backgroundColor = '#28a745'; // Green
+            statusDot.title = 'AdBlocker Actif';
+        }
+    }
+
     function skipAds() {
         const video = document.querySelector('video');
-        // YouTube often adds these classes to the player container when an ad is playing
         const adShowing = document.querySelector('.ad-showing, .ad-interrupting, .ytp-ad-player-overlay');
 
+        updateStatus(!!adShowing);
+
         if (adShowing && video) {
-            // Mute and fast-forward
             if (!video.muted) video.muted = true;
             video.playbackRate = 16;
 
-            // Try to skip immediately by seeking to the end if possible
             if (isFinite(video.duration) && video.duration > 0) {
                 video.currentTime = video.duration - 0.1;
             }
         }
 
-        // Click skip buttons
         const skipButtons = [
             '.ytp-ad-skip-button',
             '.ytp-ad-skip-button-modern',
@@ -37,7 +66,6 @@
             }
         }
 
-        // Hide overlay ads
         const overlays = [
             '.ytp-ad-overlay-container',
             '.ytp-ad-image-overlay',
@@ -59,21 +87,17 @@
             return;
         }
 
-        // Use MutationObserver for robust detection in YouTube's SPA environment
+        createStatusDot();
+
         const observer = new MutationObserver((mutations) => {
             skipAds();
         });
 
-        // Start observing
         const targetNode = document.body;
         const config = { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] };
-
         observer.observe(targetNode, config);
 
-        // Initial run
         skipAds();
-
-        // Safety interval
         setInterval(skipAds, 1000);
     }
 

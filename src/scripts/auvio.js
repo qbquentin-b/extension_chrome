@@ -4,15 +4,43 @@
  */
 
 (function() {
+    let statusDot = null;
+
+    function createStatusDot() {
+        if (statusDot) return;
+        statusDot = document.createElement('div');
+        statusDot.id = 'adblock-status-dot';
+        statusDot.style.position = 'fixed';
+        statusDot.style.top = '10px';
+        statusDot.style.right = '10px';
+        statusDot.style.width = '12px';
+        statusDot.style.height = '12px';
+        statusDot.style.borderRadius = '50%';
+        statusDot.style.zIndex = '10000';
+        statusDot.style.border = '2px solid white';
+        statusDot.style.boxShadow = '0 0 5px rgba(0,0,0,0.5)';
+        statusDot.style.backgroundColor = '#28a745'; // Green
+        statusDot.title = 'AdBlocker Actif';
+        document.body.appendChild(statusDot);
+    }
+
+    function updateStatus(isAd) {
+        if (!statusDot) createStatusDot();
+        if (isAd) {
+            statusDot.style.backgroundColor = '#dc3545'; // Red
+            statusDot.title = 'Publicité détectée et bloquée';
+        } else {
+            statusDot.style.backgroundColor = '#28a745'; // Green
+            statusDot.title = 'AdBlocker Actif';
+        }
+    }
+
     function handleAds() {
-        // Hide banner ads (identified in EasyList FR)
         const banners = document.querySelectorAll('.imu, .leaderboard, .pub-container, .ads-container');
         banners.forEach(banner => {
             banner.style.setProperty('display', 'none', 'important');
         });
 
-        // Detect video ads in Auvio
-        // Look for common IMA SDK or Red Bee Media ad-playing indicators
         const player = document.querySelector('video');
         const adPlayingClasses = [
             '.vjs-ad-playing',
@@ -30,10 +58,12 @@
             }
         }
 
-        // Generic detection: if a video is playing in an overlay above the main content
         const adVideos = document.querySelectorAll('.vjs-ad-playing video, .ima-ad-container video, .video-ad-container video');
+        const isAdActive = (isAdPlaying || adVideos.length > 0);
 
-        if (isAdPlaying || adVideos.length > 0) {
+        updateStatus(isAdActive);
+
+        if (isAdActive) {
             adVideos.forEach(v => {
                 if (!v.muted) v.muted = true;
                 v.playbackRate = 16;
@@ -42,7 +72,6 @@
                 }
             });
 
-            // If the main player is tagged as playing an ad
             if (isAdPlaying && player) {
                 if (!player.muted) player.muted = true;
                 player.playbackRate = 16;
@@ -59,12 +88,12 @@
             return;
         }
 
-        // Use MutationObserver to watch for player state changes
+        createStatusDot();
+
         const observer = new MutationObserver(handleAds);
         const targetNode = document.body;
         observer.observe(targetNode, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
 
-        // Initial and periodic check
         handleAds();
         setInterval(handleAds, 1000);
     }
